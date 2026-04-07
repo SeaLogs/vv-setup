@@ -414,29 +414,34 @@
         startProgress();
 
         // ── fetch() replaces google.script.run ──────────────────────────────────
-        fetch(APPS_SCRIPT_URL, {
-          method:  'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body:    JSON.stringify({ clientName: name, clientEmail: email, browserInfo: browser })
-        })
-        .then(function(response) {
-          if (!response.ok) throw new Error('Server returned ' + response.status);
-          return response.json();
-        })
-        .then(function(result) {
-          stopProgress();
-          document.getElementById('loading').style.display = 'none';
-          if (result && result.success) {
-            showSuccess(result.url);
-          } else {
-            showFailure((result && result.message) || 'An unexpected error occurred.');
-          }
-        })
-        .catch(function(error) {
-          stopProgress();
-          document.getElementById('loading').style.display = 'none';
-          showFailure('Connection error: ' + error.toString());
-        });
+var params = new URLSearchParams({
+  clientName:  name,
+  clientEmail: email,
+  browserInfo: browser
+});
+
+fetch(APPS_SCRIPT_URL + '?' + params.toString(), {
+  method:   'GET',
+  redirect: 'follow'
+})
+.then(function(response) {
+  if (!response.ok) throw new Error('Server returned ' + response.status);
+  return response.json();
+})
+.then(function(result) {
+  stopProgress();
+  document.getElementById('loading').style.display = 'none';
+  if (result && result.success) {
+    showSuccess(result.url);
+  } else {
+    showFailure((result && result.message) || 'An unexpected error occurred.');
+  }
+})
+.catch(function(error) {
+  stopProgress();
+  document.getElementById('loading').style.display = 'none';
+  showFailure('Connection error: ' + error.toString());
+});
       });
     </script>
   </body>
